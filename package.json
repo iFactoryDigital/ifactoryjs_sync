@@ -1,5 +1,5 @@
 {
-  "name": "@edenjs/model",
+  "name": "@edenjs/sync",
   "description": "",
   "version": "0.0.1",
   "dependencies": {},
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eden-js/model.git"
+    "url": "git+https://github.com/eden-js/sync.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/eden-js/model/issues"
+    "url": "https://github.com/eden-js/sync/issues"
   },
-  "homepage": "https://github.com/eden-js/model#readme",
+  "homepage": "https://github.com/eden-js/sync#readme",
   "devDependencies": {
     "@edenjs/eslint-config-eden": "^2.0.14",
     "eslint": "^5.15.1",
