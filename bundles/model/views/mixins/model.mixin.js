@@ -23,7 +23,7 @@ riot.mixin('model', {
       // loop models
       for (const [key, value] of this.__models) {
         // remove view listner
-        value.view.remove(this.__uuid);
+        value.listener.remove(this.__uuid);
 
         // On update
         value.removeListener('update', this.update);
@@ -56,10 +56,7 @@ riot.mixin('model', {
     }
 
     // return model
-    const model = window.eden.model.get(type, object.id, object);
-
-    // uuid
-    model.view.add(this.__uuid);
+    const model = eden.model.add(type, object.id, object, this.__uuyid);
 
     // add to models
     this.__models.set(`${type}.${object.id}`, model);

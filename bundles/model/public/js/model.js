@@ -93,10 +93,12 @@ class EdenModel extends Events {
    * Returns data key
    *
    * @param  {String} key
+   * @param  {*} value
+   * @param  {Boolean} persist
    *
    * @return {*}
    */
-  set(key, value) {
+  set(key, value, persist) {
     // Return this key
     dotProp.set(this.__data, key, value);
 
@@ -105,6 +107,11 @@ class EdenModel extends Events {
 
     // emit base key
     if (key !== key.split('.')[0]) this.emit(key.split('.')[0]);
+
+    // fetch to backend
+    if (persist) eden.router.post(`/api/${this.__type}/${this.__id}/update`, {
+      [key] : value,
+    });
 
     // return get key
     return this.get(key);
