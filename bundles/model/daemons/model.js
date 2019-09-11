@@ -38,7 +38,7 @@ class ModelDaemon extends Daemon {
    */
   build() {
     // Add endpoint for listen
-    this.eden.endpoint('model.listen', this._listen, true);
+    this.eden.endpoint('model.listen', this.onSubscribe, true);
     this.eden.endpoint('model.deafen', this.onUnsubscribe, true);
 
     // Add listeners for events
@@ -151,7 +151,7 @@ class ModelDaemon extends Daemon {
    * @param  {String}  listenID
    * @param  {Boolean} atomic
    */
-  async _listen(sessionID, type, id, listenID, atomic = false) {
+  async onSubscribe(sessionID, type, id, listenID, atomic = false) {
     // Set model
     if (!this.models.has(type)) this.models.set(type, true);
 
