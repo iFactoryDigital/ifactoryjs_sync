@@ -1,4 +1,3 @@
-
 // Require helper
 const helper = require('helper');
 
