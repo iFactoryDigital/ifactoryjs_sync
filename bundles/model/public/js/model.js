@@ -278,7 +278,7 @@ class EdenModel extends Events {
     // Update details
     for (const key of Object.keys(object)) {
       // Check differences
-      if (((!this.__data[key] && object[key]) || typeof this.__data[key] === typeof object[key]) && JSON.stringify(this.__data[key]) !== JSON.stringify(object[key])) {
+      if (JSON.stringify(this.__data[key]) !== JSON.stringify(object[key])) {
         // Listen to object key
         this.__data[key] = object[key];
 
