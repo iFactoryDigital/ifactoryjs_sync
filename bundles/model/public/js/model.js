@@ -130,7 +130,63 @@ class EdenModel extends Events {
 
   // ////////////////////////////////////////////////////////////////////////////
   //
-  // VIEW METHODS
+  // QUERY METHODS
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+
+
+  /**
+   * queries for collection
+   *
+   * @param {String} collection
+   * @param {String} listenerID
+   */
+  query(collection, listenerID) {
+    // query
+    const query = {
+      pts : [],
+      collection,
+      listenerID,
+    };
+
+    // query
+    ['where', 'lt', 'gt', 'nin', 'in', 'elem', 'limit', 'sort'].forEach((type) => {
+      // query type
+      query[type] = (...args) => {
+        // push type
+        query.pts.push(type, args);
+
+        // return query
+        return query;
+      };
+    });
+
+    // create find function
+    const find = (one) => {
+      // return created function
+      return async () => {
+        // results
+        const results = await eden.router.post(`/api/${collection}/find`, {
+          query : query.pts,
+        });
+
+        // map results to models
+        return one ? this.get(collection, results[0].id, results[0], query.listenerID) : results.map((result) => {
+          // return model
+          return this.get(collection, result.id, result, query.listenerID);
+        });
+      };
+    };
+
+    // find
+    query.find = find();
+    query.findOne = find(true);
+  }
+
+
+  // ////////////////////////////////////////////////////////////////////////////
+  //
+  // LISTENER METHODS
   //
   // ////////////////////////////////////////////////////////////////////////////
 

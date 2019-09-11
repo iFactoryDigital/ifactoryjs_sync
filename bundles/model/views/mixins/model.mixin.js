@@ -56,7 +56,7 @@ riot.mixin('model', {
     }
 
     // return model
-    const model = eden.model.add(type, object.id, object, this.__uuyid);
+    const model = eden.model.add(type, object.id, object, this.__uuid);
 
     // add to models
     this.__models.set(`${type}.${object.id}`, model);
