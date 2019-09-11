@@ -1,8 +1,10 @@
 // Require dependencies
+const uuid = require('uuid');
 const Events = require('events');
 
 // require local dependencies
 const EdenModel = require('./model');
+const Collection = require('model/utils/collection');
 
 /**
  * Create live model class
@@ -90,6 +92,115 @@ class ModelStore extends Events {
 
     // return removed
     return true;
+  }
+
+
+  // ////////////////////////////////////////////////////////////////////////////
+  //
+  // QUERY METHODS
+  //
+  // ////////////////////////////////////////////////////////////////////////////
+
+
+  /**
+   * queries for collection
+   *
+   * @param {String} collection
+   * @param {String} listenerID
+   */
+  collection(collection, listenerID) {
+    // query
+    const query = {
+      pts : [],
+      collection,
+      listenerID,
+    };
+
+    // query
+    ['where', 'lt', 'gt', 'nin', 'in', 'elem', 'limit', 'sort'].forEach((type) => {
+      // query type
+      query[type] = (...args) => {
+        // push type
+        query.pts.push(type, args);
+
+        // return query
+        return query;
+      };
+    });
+
+    // create find function
+    const find = (one) => {
+      // return created function
+      return async () => {
+        // results
+        const results = await eden.router.post(`/api/${collection}/find`, {
+          query : query.pts,
+        });
+
+        // map results to models
+        return one ? this.get(collection, results[0].id, results[0], query.listenerID) : results.map((result) => {
+          // return model
+          return this.get(collection, result.id, result, query.listenerID);
+        });
+      };
+    };
+
+    // find
+    query.find = find();
+    query.findOne = find(true);
+    query.listen = async () => {
+      // listen to collection
+      const subCollection = new Collection();
+
+      // for each
+      (await find()()).forEach((item) => {
+        // set item
+        subCollection.set(item.get('id'), item);
+      });
+
+      // set methods
+      subCollection.uuid = uuid();
+      subCollection.query = query.pts;
+      subCollection.destroy = () => {
+        // loop items
+        subCollection.array().forEach((item) => {
+          // remove listener
+          item.listener.remove(listenerID);
+        });
+
+        // remove socket events
+        socket.off(`collection.${subCollection.uuid}.model.add`);
+        socket.off(`collection.${subCollection.uuid}.model.remove`);
+      };
+
+      // on model add
+      socket.on(`collection.${subCollection.uuid}.model.add`, (model) => {
+        // add model
+        subCollection.set(model.id, this.get(collection, model.id, model, listenerID));
+      });
+      socket.on(`collection.${subCollection.uuid}.model.remove`, (model) => {
+        // add model
+        if (subCollection.get(model.id)) {
+          // remove listener
+          subCollection.get(model.id).listener.remove(listenerID);
+        }
+
+        // delete
+        subCollection.delete(model.id);
+      });
+    };
+
+    // create model
+    query.create(async (opts) => {
+      // fetch to backend
+      const result = await eden.router.post(`/api/${collection}/create`, opts);
+
+      // check data
+      if (result.data) {
+        // return got model
+        return this.get(collection, result.data.id, result.data, listenerID);
+      }
+    });
   }
 }
 
