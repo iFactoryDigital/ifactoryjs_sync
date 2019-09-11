@@ -28,12 +28,15 @@ class ModelHelper extends helper {
    *
    * @returns {Promise}
    */
-  deafen(sessionID, listenModel, listenID) {
+  deafen(sessionID, listenModel, listenID, user) {
     // check model
     if (!listenModel || !listenModel.get('_id')) return;
 
     // Call local
-    return this.eden.thread(['back', 'model']).call('model.deafen', sessionID, listenModel.constructor.name.toLowerCase(), listenModel.get('_id').toString(), listenID);
+    return this.eden.thread(['back', 'model']).call('model.deafen', {
+      sessionID,
+      userID : user ? user.get('_id') : null,
+    }, listenModel.constructor.name.toLowerCase(), listenModel.get('_id').toString(), listenID);
   }
 
   /**
@@ -46,12 +49,15 @@ class ModelHelper extends helper {
    *
    * @returns {Promise}
    */
-  listen(sessionID, listenModel, listenID, atomic = false) {
+  listen(sessionID, listenModel, listenID, atomic = false, user) {
     // check model
     if (!listenModel || !listenModel.get('_id')) return;
 
     // Call local
-    return this.eden.thread(['back', 'model']).call('model.listen', sessionID, listenModel.constructor.name.toLowerCase(), listenModel.get('_id').toString(), listenID, atomic);
+    return this.eden.thread(['back', 'model']).call('model.listen', {
+      sessionID,
+      userID : user ? user.get('_id') : null,
+    }, listenModel.constructor.name.toLowerCase(), listenModel.get('_id').toString(), listenID, atomic);
   }
 }
 

@@ -83,20 +83,30 @@ class ModelDaemon extends Daemon {
     });
 
     // Emit sanitised
-    const sent      = [];
-    const atomic    = {};
-    const sanitised = await gotModel.sanitise();
-
-    // emit only updates
-    Object.keys(sanitised).forEach((key) => {
-      // remove key if not in updated
-      if (opts.updates.includes(key)) atomic[key] = sanitised[key];
-    });
+    const sent = [];
 
     // Loop listeners
-    listeners.forEach((listener) => {
+    listeners.forEach(async (listener) => {
       // check atomic
       if (sent.includes(listener.session)) return;
+
+      // atomic
+      const atomic = {};
+
+      // sanitised
+      const sanitised = await gotModel.sanitise();
+
+      // check atomically
+      if (listener.atomic) {
+        // emit only updates
+        Object.keys(sanitised).forEach((key) => {
+          // remove key if not in updated
+          if (opts.updates.includes(key)) atomic[key] = sanitised[key];
+        });
+      }
+
+      // hook
+      await this.eden.hook(`model.${opts.model.toLowerCase()}.sync.sanitise`, { opts, sanitised, atomic, listener, model : gotModel });
 
       // send atomic update
       socket.session(listener.session, `model.update.${opts.model.toLowerCase()}.${opts.id}`, listener.atomic ? atomic : sanitised);
@@ -114,7 +124,7 @@ class ModelDaemon extends Daemon {
    * @param  {String}  id
    * @param  {String}  listenID
    */
-  async onUnsubscribe(sessionID, type, id, listenID) {
+  async onUnsubscribe(opts, type, id, listenID) {
     // Set model
     if (!this.models.has(type)) this.models.set(type, true);
 
@@ -151,9 +161,16 @@ class ModelDaemon extends Daemon {
    * @param  {String}  listenID
    * @param  {Boolean} atomic
    */
-  async onSubscribe(sessionID, type, id, listenID, atomic = false) {
+  async onSubscribe(opts, type, id, listenID, atomic = false) {
     // Set model
     if (!this.models.has(type)) this.models.set(type, true);
+
+    // check atomic
+    if (typeof atomic !== 'boolean') {
+      // set vlaue
+      opts = atomic;
+      atomic = false;
+    }
 
     // Log to eden
     this.logger.log('debug', `[listen] ${type} #${id} for ${sessionID}`, {
@@ -169,7 +186,7 @@ class ModelDaemon extends Daemon {
     // Check found
     const found = listeners.find((listener) => {
       // Return filtered
-      return listener.session === sessionID && listener.uuid === listenID;
+      return listener.session === opts.sessionID && listener.uuid === listenID;
     });
 
     // Add sessionID to listeners
@@ -179,10 +196,11 @@ class ModelDaemon extends Daemon {
     } else {
       // Push listener
       listeners.push({
+        ...opts,
+  
         atomic,
-        uuid    : listenID,
-        last    : new Date(),
-        session : sessionID,
+        uuid : listenID,
+        last : new Date(),
       });
     }
 
