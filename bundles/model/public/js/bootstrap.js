@@ -24,7 +24,8 @@ class ModelStore extends Events {
     this.__models = new Map();
 
     // Build
-    this.get = this.get.bind(this);
+    this.add = this.add.bind(this);
+    this.remove = this.remove.bind(this);
   }
 
 
@@ -34,10 +35,11 @@ class ModelStore extends Events {
    * @param  {String} type
    * @param  {String} id
    * @param  {Object} opts
+   * @param  {String} listenID
    *
    * @return {EdenModel}
    */
-  get(type, id, opts) {
+  add(type, id, opts, listenID) {
     // set model
     if (!this.__models.has(type)) {
       // multi-dimensional map
@@ -48,6 +50,7 @@ class ModelStore extends Events {
     if (!id || !this.__models.get(type).has(id)) {
       // alter model
       this.__models.get(type).set(id, new EdenModel(type, id, opts || {}));
+      this.__models.get(type).listener.add(listenID);
 
       // on remove
       this.__models.get(type).get(id).on('destroy', () => {
@@ -68,10 +71,11 @@ class ModelStore extends Events {
    *
    * @param  {String} type
    * @param  {String} id
+   * @param  {String} listenID
    *
    * @return {*}
    */
-  remove(type, id) {
+  remove(type, id, listenID) {
     // set model
     if (!this.__models.has(type)) {
       // multi-dimensional map
@@ -81,8 +85,7 @@ class ModelStore extends Events {
     // set id
     if (!this.__models.get(type).has(id)) {
       // alter model
-      this.__models.get(type).get(id).deafen();
-      this.__models.get(type).delete(id);
+      this.__models.get(type).get(id).listener.remove(listenID);
     }
 
     // return removed

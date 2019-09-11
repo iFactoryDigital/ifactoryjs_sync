@@ -27,7 +27,7 @@ class EdenModel extends Events {
     this.__id = id;
     this.__data = opts;
     this.__type = type;
-    this.__viewListeners = new Set();
+    this.__listeners = new Set();
 
     // Bind methods
     this.get = this.get.bind(this);
@@ -43,9 +43,9 @@ class EdenModel extends Events {
     this._connect = this._connect.bind(this);
 
     // set view
-    this.view = {
-      add    : this.viewAdd.bind(this),
-      remove : this.viewRemove.bind(this),
+    this.listener = {
+      add    : this.listenerAdd.bind(this),
+      remove : this.listenerRemove.bind(this),
     };
 
     // Build
@@ -132,9 +132,9 @@ class EdenModel extends Events {
    *
    * @param  {String} uuid
    */
-  viewAdd(id) {
+  listenerAdd(id) {
     // add uuid
-    if (id) this.__viewListeners.add(id);
+    if (id) this.__listeners.add(id);
   }
 
   /**
@@ -142,17 +142,17 @@ class EdenModel extends Events {
    *
    * @param  {String} uuid
    */
-  viewRemove(id) {
+  listenerRemove(id) {
     // add uuid
-    this.__viewListeners.delete(id);
+    this.__listeners.delete(id);
 
     // clear timeout
-    if (this.__viewTimeout) clearTimeout(this.__viewTimeout);
+    if (this.__timeout) clearTimeout(this.__timeout);
 
     // set timeout
-    this.__viewTimeout = setTimeout(() => {
+    this.__timeout = setTimeout(() => {
       // check listeners
-      if (this.__viewListeners.size) return;
+      if (this.__listeners.size) return;
 
       // deafen
       this.destroy();
