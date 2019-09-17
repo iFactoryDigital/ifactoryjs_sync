@@ -129,7 +129,7 @@ class ModelDaemon extends Daemon {
     if (!this.models.has(type)) this.models.set(type, true);
 
     // Log to eden
-    this.logger.log('debug', `[removeListener] ${type} #${id} for ${sessionID}`, {
+    this.logger.log('debug', `[removeListener] ${type} #${id} for ${opts.sessionID}`, {
       class : this.constructor.name,
     });
 
@@ -173,7 +173,7 @@ class ModelDaemon extends Daemon {
     }
 
     // Log to eden
-    this.logger.log('debug', `[listen] ${type} #${id} for ${sessionID}`, {
+    this.logger.log('debug', `[listen] ${type} #${id} for ${opts.sessionID}`, {
       class : this.constructor.name,
     });
 
@@ -197,7 +197,7 @@ class ModelDaemon extends Daemon {
       // Push listener
       listeners.push({
         ...opts,
-  
+
         atomic,
         uuid : listenID,
         last : new Date(),
