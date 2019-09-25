@@ -1,9 +1,4 @@
 
-// require uuid
-const uuid = require('uuid');
-
-// Require live model
-const EdenModel = require('model/public/js/model');
 
 // Create mixin
 riot.mixin('model', {
@@ -11,6 +6,9 @@ riot.mixin('model', {
    * On init function
    */
   init() {
+    // require uuid
+    const uuid = require('uuid');
+
     // set of models
     this.__uuid = uuid();
     this.__models = new Map();
@@ -43,6 +41,12 @@ riot.mixin('model', {
    * @return {FEModel}
    */
   model(type, object) {
+    // require uuid
+    const uuid = require('uuid');
+
+    // Require live model
+    const EdenModel = require('model/public/js/model');
+
     // check uuid
     if (!this.__uuid) this.__uuid = uuid();
 
